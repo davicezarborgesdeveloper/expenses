@@ -25,22 +25,22 @@ class _TransactionFormState extends State<TransactionForm> {
     widget.onSubmit(title, value, _selectedDate);
   }
 
-  _showDatePicker() {
-    showDatePicker(
-            context: context,
-            initialDate: DateTime.now(),
-            firstDate: DateTime(2019),
-            lastDate: DateTime.now())
-        .then((pickedDate) {
-      if (pickedDate == null) {
-        return;
-      }
-      setState(() {
-        _selectedDate = pickedDate;
-      });
-    });
-    print('Executado!');
-  }
+  // _showDatePicker() {
+  //   showDatePicker(
+  //           context: context,
+  //           initialDate: DateTime.now(),
+  //           firstDate: DateTime(2019),
+  //           lastDate: DateTime.now())
+  //       .then((pickedDate) {
+  //     if (pickedDate == null) {
+  //       return;
+  //     }
+  //     setState(() {
+  //       _selectedDate = pickedDate;
+  //     });
+  //   });
+  //   print('Executado!');
+  // }
 
   @override
   Widget build(BuildContext context) {
