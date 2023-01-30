@@ -8,23 +8,26 @@ import 'package:expanses/components/transaction_list.dart';
 import 'package:expanses/models/transaction.dart';
 import 'package:flutter/material.dart';
 
-void main() {
+var screenHeight = 0.0;
+var screenWidth = 0.0;
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  setWindowSizeDesktop();
+  await setWindowSizeDesktop();
   runApp(ExpensesApp());
 }
 
 setWindowSizeDesktop() async {
   if (Platform.isWindows) {
-    await DesktopWindow.setWindowSize(
-        Size(392.72727272727275, 803.6363636363636));
+    screenWidth = 392.72727272727275;
+    screenHeight = 825.4545454545455;
+    await DesktopWindow.setWindowSize(Size(screenWidth, screenHeight));
   }
 }
 
 class ExpensesApp extends StatelessWidget {
-  const ExpensesApp({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
+    // SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     final ThemeData tema = ThemeData();
     return MaterialApp(
       debugShowCheckedModeBanner: false,
@@ -63,6 +66,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final List<Transaction> _transactions = [];
+  bool _showChart = false;
 
   List<Transaction> get _recentTransactions {
     return _transactions.where((tr) {
@@ -98,33 +102,71 @@ class _MyHomePageState extends State<MyHomePage> {
         });
   }
 
+  _changeOrientation() async {
+    var auxSize = 0.0;
+    auxSize = screenHeight;
+    screenHeight = screenWidth;
+    screenWidth = auxSize;
+    await DesktopWindow.setWindowSize(Size(screenWidth, screenHeight));
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Despesas Pessoais'),
-        actions: [
+    final appBar = AppBar(
+      title: Text(
+        'Despesas Pessoais',
+        // style: TextStyle(fontSize: 10 * MediaQuery.of(context).textScaleFactor),
+      ),
+      actions: [
+        if (Platform.isWindows)
           IconButton(
-            onPressed: () => _openTransactionFormModal(context),
-            icon: Icon(Icons.add),
-          )
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _openTransactionFormModal(context),
-        // onPressed: () {},
-        child: Icon(Icons.add),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+            onPressed: () => _changeOrientation(),
+            icon: Icon(Icons.change_circle_outlined),
+          ),
+        IconButton(
+          onPressed: () => _openTransactionFormModal(context),
+          icon: Icon(Icons.add),
+        )
+      ],
+    );
+    final availableHeight = MediaQuery.of(context).size.height -
+        appBar.preferredSize.height -
+        MediaQuery.of(context).padding.top;
+
+    return Scaffold(
+      appBar: appBar,
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Chart(_recentTransactions),
-            TransactionList(_transactions, _removeTransaction),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('Exibir Gráfico'),
+                Switch(
+                    value: _showChart,
+                    onChanged: (value) {
+                      setState(() {
+                        _showChart = value;
+                      });
+                    }),
+              ],
+            ),
+            _showChart
+                ? Container(
+                    height: availableHeight * 0.3,
+                    child: Chart(_recentTransactions))
+                : Container(
+                    height: availableHeight * 0.7,
+                    child: TransactionList(_transactions, _removeTransaction)),
           ],
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _openTransactionFormModal(context),
+        child: Icon(Icons.add),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }
